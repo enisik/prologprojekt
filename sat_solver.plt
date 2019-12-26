@@ -22,6 +22,9 @@ test(to_cnf5,[true(Res == [[A,B]])]) :-
 test(to_cnf6,[true(Res == [[A],[B]])]) :-
     to_cnf(and(lit(A),lit(B)), Res).
 
+test(to_cnf7, [true(Res == [[]])]) :-
+    to_cnf(or(lit(A),and(lit(B),lit(C))), Res)
+
 test(to_cnf_bt1,[all(Res = [[[not(A),B]]])]) :-
     to_cnf(implies(not(not(lit(A))),lit(B)), Res).
 
