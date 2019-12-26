@@ -24,9 +24,13 @@ to_cnf(implies(Term1,Term2),Result):-
     to_cnf(or(not(Term1),Term2),Result).
 
 % De-Morgansche Regel
-to_cnf(not(or(X,Y)),Res):-
+to_cnf(not(or(Term1,Term2)),Result):-
     !,
-    to_cnf(and(not(X),not(Y)),Res).
+    to_cnf(and(not(Term1),not(Term2)),Result).
+
+to_cnf(not(and(Term1,Term2)), Result):-
+    !,
+    to_cnf(or(not(Term1),not(Term2)), Result).
 
 % Distributivgesetz
 to_cnf(or(Term1, and(Term2,Term3)),[Res1,Res2]):-
