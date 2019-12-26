@@ -1,4 +1,4 @@
-:- module(sat_solver,[solvername/1,to_cnf/2]).
+:- module(sat_solver,[solvername/1,to_cnf/2, solve/1]).
 % Export the predicates for the test module later on.
 %:- module(sat_solver,[solvername/1, to_cnf/2, solve/1]).
 
@@ -59,3 +59,6 @@ to_cnf(or(X),not(not(Y)),Result):-
 %    to_cnf(or(Y,X), [Res1, Res2]).
 
 % TODO solve
+
+solve([]).
+solve([[]]):-fail.
