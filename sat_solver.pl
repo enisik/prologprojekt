@@ -8,26 +8,54 @@
 solvername(irgendein_name).
 
 % to_cnf/2
+
 to_cnf(lit(X), [[X]]).
-to_cnf(not(not(X)), Res):-
-    !,
-    to_cnf(X, Res).
 to_cnf(not(lit(true)), [[false]]):-!.
 to_cnf(not(lit(false)),[[true]]):-!.
 to_cnf(not(lit(X)), [[not(X)]]).
 
+% --a (<=>) a
+to_cnf(not(not(X)), Res):-
+    !,
+    to_cnf(X, Res).
+
+% a => b  (<=>) -a v b
+to_cnf(implies(Term1,Term2),Result):-
+    to_cnf(or(not(Term1),Term2),Result).
+
+% De-Morgansche Regel
 to_cnf(not(or(X,Y)),Res):-
     !,
     to_cnf(and(not(X),not(Y)),Res).
 
+% Distributivgesetz
+to_cnf(or(Term1, and(Term2,Term3)),[Res1,Res2]):-
+    !,
+    to_cnf(or(Term1,Term2),[Res1]),
+    to_cnf(or(Term1,Term3),[Res2]).
+
+% and
 to_cnf(and(Term1, Term2), [Res1, Res2]):-
     to_cnf(Term1, [Res1]),
     to_cnf(Term2, [Res2]).
 
+% or
+to_cnf(or(lit(X), lit(Y)), [[X,Y]]):-!.
 
-% TODO
+to_cnf(or(not(lit(X)), lit(Y)), [[not(X),Y]]):-!.
+to_cnf(or(lit(X), not(lit(Y))), [[X,not(Y)]]):-!.
 
-to_cnf(or(lit(X), lit(Y)), [[X,Y]]).
-to_cnf(or(not(lit(X)), lit(Y)), [[not(X),Y]]).
-to_cnf(or(X,Y), Res):-
-    to_cnf(or(Y,X), Res).
+to_cnf(or(not(not(X)),Y),Result):-
+    !,
+    to_cnf(or(X,Y),Result).
+
+to_cnf(or(X),not(not(Y)),Result):-
+    !,
+    to_cnf(or(X,Y),Result).
+
+%Kommutativität
+%to_cnf(or(X,Y), [Res2, Res1]):-
+%    !,
+%    to_cnf(or(Y,X), [Res1, Res2]).
+
+% TODO solve
