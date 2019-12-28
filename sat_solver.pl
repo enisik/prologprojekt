@@ -10,9 +10,10 @@ solvername(irgendein_name).
 % to_cnf/2
 
 to_cnf(lit(X), [[X]]).
-to_cnf(not(lit(true)), [[false]]):-!.
-to_cnf(not(lit(false)),[[true]]):-!.
-to_cnf(not(lit(X)), [[not(X)]]).
+to_cnf(not(lit(X)), [[not(X)]]):-
+    \+ ground(X), !.
+to_cnf(not(lit(true)), [[false]]).
+to_cnf(not(lit(false)),[[true]]).
 
 % --a (<=>) a
 to_cnf(not(not(X)), Res):-
@@ -62,12 +63,12 @@ to_cnf(or(X),not(not(Y)),Result):-
     !,
     to_cnf(or(X,Y),Result).
 
-%Kommutativität
+% commutative property
 %to_cnf(or(X,Y), [Res2, Res1]):-
 %    !,
 %    to_cnf(or(Y,X), [Res1, Res2]).
 
 % TODO solve
 
-solve([]).
-solve([[]]):-fail.
+solve([]):-!.
+solve([[]]):-!,fail.
