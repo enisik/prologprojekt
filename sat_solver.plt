@@ -31,8 +31,8 @@ test(to_cnf8, [true(Res == [[not(A)],[B]])]) :-
 test(to_cnf9, [true(Res == [[false,not(A)]])]):-
     to_cnf(not(and(not(lit(false)), lit(A))), Res).
 
-test(to_cnf10, [true(Res == [[X],[true]])]):-
-    to_cnf(implies(not(lit(X)), lit(true)).
+test(to_cnf10, [true(Res == [[X,true]])]):-
+    to_cnf(implies(not(lit(X)), lit(true)), Res).
 
 test(to_cnf_bt1,[all(Res = [[[not(A),B]]])]) :-
     to_cnf(implies(not(not(lit(A))),lit(B)), Res).
