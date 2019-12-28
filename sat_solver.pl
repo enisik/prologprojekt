@@ -38,6 +38,11 @@ to_cnf(or(Term1, and(Term2,Term3)),[Res1,Res2]):-
     to_cnf(or(Term1,Term2),[Res1]),
     to_cnf(or(Term1,Term3),[Res2]).
 
+to_cnf(or(and(Term1,Term2),Term3), [Res1,Res2]):-
+    !,
+    to_cnf(or(Term1, Term3), [Res1]),
+    to_cnf(or(Term2, Term3), [Res2]).
+
 % and
 to_cnf(and(Term1, Term2), [Res1, Res2]):-
     to_cnf(Term1, [Res1]),
