@@ -9,107 +9,105 @@ solvername(irgendein_name).
 
 % to_cnf/2
 
-to_cnf(lit(X), [[X]]).
-to_cnf(not(lit(X)), [[not(X)]]):-
-    \+ ground(X), !.
-to_cnf(not(lit(true)), [[false]]).
-to_cnf(not(lit(false)),[[true]]).
-
-% --a (<=>) a
-to_cnf(not(not(X)), Res):-
+simplify(not(Term1), not(Term2)):-
     !,
-    to_cnf(X, Res).
+    simplify(Term1, Term2).
 
 % a => b  (<=>) -a v b
-to_cnf(implies(Term1,Term2),Result):-
+simplify(implies(Term1, Term2), or(not(SimpTerm1),SimpTerm2)):-
     !,
-    to_cnf(or(not(Term1),Term2),Result).
+    simplify(Term1, SimpTerm1),
+    simplify(Term2, SimpTerm2).
 
-% -(a = > b) (<=>) -(-a v b) (<=>) a and -b
-to_cnf(not(implies(Term1, Term2)), Result):-
+simplify(and(Term1, Term2), and(SimpTerm1, SimpTerm2)):-
     !,
-    to_cnf(and(Term1, not(Term2)), Result).
+    simplify(Term1, SimpTerm1),
+    simplify(Term2, SimpTerm2).
+
+simplify(or(Term1, Term2), or(SimpTerm1, SimpTerm2)):-
+    !,
+    simplify(Term1, SimpTerm1),
+    simplify(Term2, SimpTerm2).
+
+simplify(X,X).
+
+move(not(not(Term1)), MovTerm1):-
+    !,
+    move(Term1, MovTerm1).
 
 % De Morgan's laws
-to_cnf(not(or(Term1,Term2)),Result):-
+move(not(or(Term1,Term2)), and(MovTerm1,MovTerm2)):-
     !,
-    to_cnf(and(not(Term1),not(Term2)),Result).
+    move(not(Term1), MovTerm1),
+    move(not(Term2), MovTerm2).
 
-to_cnf(not(and(Term1,Term2)), Result):-
+move(not(and(Term1,Term2)), or(MovTerm1,MovTerm2)):-
     !,
-    to_cnf(or(not(Term1),not(Term2)), Result).
+    move(not(Term1), MovTerm1),
+    move(not(Term2), MovTerm2).
+
+move(and(Term1, Term2), and(SimpTerm1, SimpTerm2)):-
+    !,
+    move(Term1, SimpTerm1),
+    move(Term2, SimpTerm2).
+
+move(or(Term1, Term2), or(SimpTerm1, SimpTerm2)):-
+    !,
+    move(Term1, SimpTerm1),
+    move(Term2, SimpTerm2).
+
+move(X,X).
+
 
 % Distributive property
-to_cnf(or(Term1, and(Term2,Term3)),[Res1,Res2]):-
-    !,
-    to_cnf(or(Term1,Term2),[Res1]),
-    to_cnf(or(Term1,Term3),[Res2]).
+distri(or(Term1, and(Term2,Term3)), and(or(Term1,Term2), or(Term1,Term3))):-!.
 
-to_cnf(or(and(Term1,Term2),Term3), [Res1,Res2]):-
-    !,
-    to_cnf(or(Term1, Term3), [Res1]),
-    to_cnf(or(Term2, Term3), [Res2]).
+distri(or(and(Term1,Term2),Term3), and(or(Term1, Term3), or(Term2, Term3))):-!.
 
-% and
-to_cnf(and(Term1, Term2), [Res1, Res2]):-
+distri(X,X).
+
+to_list(and(Term1, Term2), [Res1, Res2]):-
+    !,
     to_cnf(Term1, [Res1]),
     to_cnf(Term2, [Res2]).
 
-% or
-to_cnf(or(lit(X), lit(Y)), [[X,Y]]):-!.
-
-to_cnf(or(not(lit(X)), lit(Y)), [[not(X),Y]]):-!.
-to_cnf(or(lit(X), not(lit(Y))), [[X,not(Y)]]):-!.
-
-to_cnf(or(not(implies(Term1, Term2)), Term3), Result):-
+to_list(or(Term1, Term2), [[Res1, Res2]]):-
     !,
-    to_cnf(or(and(Term1, not(Term2)), Term3), Result).
+    to_cnf(Term1, [Res1]),
+    to_cnf(Term2, [Res2]).
 
-to_cnf(or(Term1, not(implies(Term2, Term3))), Result):-
+
+to_cnf(lit(X), [[X]]):-!.
+to_cnf(not(lit(X)), [[not(X)]]):-
+    \+ ground(X), !.
+to_cnf(not(lit(true)), [[false]]):-!.
+to_cnf(not(lit(false)),[[true]]):-!.
+
+%simp_list([],[]):-!.
+simp_list([[[H1]],[[H2]]|Tail], [H1|TResult]):-
     !,
-    to_cnf(or(Term1, and(Term2, not(Term3))), Result).
+    simp_list([[H2]|Tail], TResult).
 
-to_cnf(or(not(not(Term1)),Term2),Result):-
+simp_list(X,X).
+
+to_cnf(Term, Result):-
     !,
-    to_cnf(or(Term1,Term2),Result).
+    simplify(Term, SimpTerm),
+    move(SimpTerm, MoveTerm),
+    distri(MoveTerm, DistriTerm),
+    to_list(DistriTerm, ListResult),
+    list_simp(ListResult, Result).
 
-to_cnf(or(Term1),not(not(Term2)),Result):-
-    !,
-    to_cnf(or(Term1,Term2),Result).
-
-to_cnf(or(Term1, not(or(Term2, Term3))), Result):-
-    to_cnf(or(Term1, and(not(Term2), not(Term3))), Result).
-
-to_cnf(or(and(Term1, Term2), Term3), Result):-
-    to_cnf(and(Term1, or(Term2, Term3)), Result).
-
-to_cnf(or(or(Term1, Term2), Term3), [[Term1, Term2, Term3]]).
-
-% commutative property
-%to_cnf(or(X,Y), [Res2, Res1]):-
-%    !,
-%    to_cnf(or(Y,X), [Res1, Res2]).
-
-% TODO solve
+% solve/1
 
 solve([]):-!.
-solve([[]]):-!,fail.
+%solve([[]]):-!,fail.
 
-solve([Head|Tail]):-
-    member(true, Head),!,
+%solve([Head|Tail]):-
+%    member(true, Head),!,
     %remove_true([Tail], Result)
-    solve(Tail).
+%    solve(Tail).
 
-solve([Head|Tail]):-
-    member(not(false), Head),
-    solve(Tail).
-
-%remove_true([Head|Tail], [Head|TResult]):-
-%    member(true, Head),
-%    remove_true(Tail, TResult).
-
-%remove_true([Head|Tail], [Head|TResult]):-
+%solve([Head|Tail]):-
 %    member(not(false), Head),
-%    remove_true(Tail, TResult).
-%remove_true([_|Tail], TResult):-
-%    remove_true(Tail, TResult).
+%    solve(Tail).
