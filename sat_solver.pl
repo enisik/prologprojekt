@@ -71,10 +71,11 @@ to_list(and(Term1, Term2), [Res1, Res2]):-
     to_cnf(Term1, [Res1]),
     to_cnf(Term2, [Res2]).
 
-to_list(or(Term1, Term2), [[Res1, Res2]]):-
+to_list(or(Term1, Term2), [Result]):-
     !,
     to_cnf(Term1, [Res1]),
-    to_cnf(Term2, [Res2]).
+    to_cnf(Term2, [Res2]),
+    append(Res1, Res2, Result).
 
 
 to_cnf(lit(X), [[X]]):-!.
@@ -83,31 +84,23 @@ to_cnf(not(lit(X)), [[not(X)]]):-
 to_cnf(not(lit(true)), [[false]]):-!.
 to_cnf(not(lit(false)),[[true]]):-!.
 
-%simp_list([],[]):-!.
-simp_list([[[H1]],[[H2]]|Tail], [H1|TResult]):-
-    !,
-    simp_list([[H2]|Tail], TResult).
-
-simp_list(X,X).
 
 to_cnf(Term, Result):-
     !,
     simplify(Term, SimpTerm),
     move(SimpTerm, MoveTerm),
     distri(MoveTerm, DistriTerm),
-    to_list(DistriTerm, ListResult),
-    list_simp(ListResult, Result).
+    to_list(DistriTerm, Result).
 
 % solve/1
 
 solve([]):-!.
 %solve([[]]):-!,fail.
 
-%solve([Head|Tail]):-
-%    member(true, Head),!,
-    %remove_true([Tail], Result)
-%    solve(Tail).
+solve([Head|Tail]):-
+    member(true, Head),!,
+    solve(Tail).
 
-%solve([Head|Tail]):-
-%    member(not(false), Head),
-%    solve(Tail).
+solve([Head|Tail]):-
+    member(not(false), Head),
+    solve(Tail).

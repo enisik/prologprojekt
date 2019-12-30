@@ -37,6 +37,10 @@ test(to_cnf10, [true(Res == [[X,true]])]):-
 test(to_cnf11, [true(Res == [[X,Y,false]])]):-
     to_cnf(or(lit(X),or(lit(Y), not(lit(true)))), Res).
 
+test(to_cnf12, [true(Res == [[X,Z],[X,Y]])]):-
+    to_cnf(not(and(implies(lit(X),not(or(lit(Y),lit(Z)))),
+    or(and(lit(X),lit(Y)), not(lit(Z))))), Res).
+
 test(to_cnf_bt1,[all(Res = [[[not(A),B]]])]) :-
     to_cnf(implies(not(not(lit(A))),lit(B)), Res).
 
