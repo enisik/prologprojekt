@@ -84,7 +84,6 @@ to_cnf(not(lit(X)), [[not(X)]]):-
 to_cnf(not(lit(true)), [[false]]):-!.
 to_cnf(not(lit(false)),[[true]]):-!.
 
-
 to_cnf(Term, Result):-
     !,
     simplify(Term, SimpTerm),
