@@ -46,6 +46,19 @@ move(not(and(Term1,Term2)), or(MovTerm1,MovTerm2)):-
     move(not(Term1), MovTerm1),
     move(not(Term2), MovTerm2).
 
+% Distributive property
+move(or(Term1, and(Term2,Term3)), and(or(NewTerm1,NewTerm2), or(NewTerm1,NewTerm3))):-
+    !,
+    move(Term1, NewTerm1),
+    move(Term2, NewTerm2),
+    move(Term3, NewTerm3).
+
+move(or(and(Term1,Term2),Term3), and(or(NewTerm1, NewTerm3), or(NewTerm2, NewTerm3))):-
+    !,
+    move(Term1, NewTerm1),
+    move(Term2, NewTerm2),
+    move(Term3, NewTerm3).
+
 move(and(Term1, Term2), and(SimpTerm1, SimpTerm2)):-
     !,
     move(Term1, SimpTerm1),
@@ -59,12 +72,6 @@ move(or(Term1, Term2), or(SimpTerm1, SimpTerm2)):-
 move(X,X).
 
 
-% Distributive property
-distri(or(Term1, and(Term2,Term3)), and(or(Term1,Term2), or(Term1,Term3))):-!.
-
-distri(or(and(Term1,Term2),Term3), and(or(Term1, Term3), or(Term2, Term3))):-!.
-
-distri(X,X).
 
 to_list(and(Term1, Term2), [Res1, Res2]):-
     !,
@@ -88,8 +95,8 @@ to_cnf(Term, Result):-
     !,
     simplify(Term, SimpTerm),
     move(SimpTerm, MoveTerm),
-    distri(MoveTerm, DistriTerm),
-    to_list(DistriTerm, Result).
+%    distri(MoveTerm, DistriTerm),
+    to_list(MoveTerm, Result).
 
 % solve/1
 
