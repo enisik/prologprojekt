@@ -166,24 +166,23 @@ propagate([Head|Tail], Result):-
     member(X, [true,false]),
     remove_value([Head|Tail], Result).
 
+solve_helper([]):-!.
+solve_helper(Term):- member([], Term), !, fail.
 
-solve_helper(Term,N):-
-    N >0,!,
-    NN is N -1,
+solve_helper(Term):-
+    %N >0,!,
+    %NN is N -1,
     unit_prop_and_remove(Term, NewTerm),
-    solve_helper(NewTerm, NN).
+    solve_helper(NewTerm).
 
-solve_helper(Term, N):-
-    N >0,!,
-    NN is N-1,
+solve_helper(Term):-
+    %N >0,!,
+    %NN is N-1,
     propagate(Term, NewTerm),
-    solve_helper(NewTerm,NN).
-
-solve_helper([], _):-!.
-solve_helper(Term, _):- member([], Term), !, fail.
+    solve_helper(NewTerm).
 
 %solve([]):-!.
 %solve(Term):- member([], Term), !, fail.
 solve(Term):-
-    unit_prop_and_remove(Term, Term1),!,
-    solve_helper(Term1, 10).
+    unit_prop_and_remove(Term, NewTerm),!,
+    solve_helper(NewTerm).
