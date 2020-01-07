@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 % solvername\1
-solvername(prosat).
+solvername(proSAT).
 
 %%____ to_cnf/2 ____%%
 
@@ -91,12 +91,11 @@ simplify_distri(or(Term1, Term2), or(SimpTerm1, Term2)):-
 simplify_distri(or(Term1, Term2), or(Term1, SimpTerm2)):-
     simplify_distri(Term2, SimpTerm2).
 
-%simplify_distri(Term,Term).
 
-distri_loop(Term1, Term2):-
-    simplify_distri(Term1, Acc),
+distri_loop(Term1, Result):-
+    simplify_distri(Term1, Term2),
     !,
-    distri_loop(Acc, Term2).
+    distri_loop(Term2, Result).
 distri_loop(Term, Term).
 
 % to_list converts cnf to list
@@ -127,34 +126,64 @@ to_cnf(Term, Result):-
 
 % solve/1
 
+remove_false([],[]):-!.
+remove_false([Head|Tail], Result):-
+    atom(Head),!,
+    Head == false,
+    remove_false(Tail,Result).
+remove_false([Head|Tail], [Head|TResult]):-
+    remove_false(Tail,TResult).
+
 remove_value([],[]):-!.
 remove_value([Head|Tail], Result):-
     member(X, Head),
     ground(X),
-    member(X, [true]),
-    !,
+    member(X, [true]),!,
     remove_value(Tail,Result).
 remove_value([Head|Tail], [NewHead|TResult]):-
-    member(X, Head),
-    atom(X),
-    delete(Head, X, NewHead),!,
+    remove_false(Head,NewHead),!,
     remove_value(Tail,TResult).
 remove_value(List, List).
 
-unit_porpagate([],[]).
-unit_porpagate([[Var]|Tail], [[Var]|TResult]):-
-    var(Var),!,
-    Var = true,
-    unit_porpagate(Tail, TResult).
-unit_porpagate([Head|Tail], [Head|TResult]):-
-    unit_porpagate(Tail,TResult).
+unit_propagate([],[]):-!.
+unit_propagate([[Var]|Tail], Tail):-
+    var(Var),
+    Var = true.
+unit_propagate([[not(Var)|Tail]], Tail):-
+    var(Var),
+    Var = false.
+unit_propagate([Head|Tail], [Head|TResult]):-
+    unit_propagate(Tail,TResult).
 
-solve([], 1):-!.
-solve(Term, 1):- member([], Term), !, fail.
+unit_prop_and_remove(List,Result):-
+    remove_value(List, ClearList),
+    unit_propagate(ClearList, NewList),
+    remove_value(NewList,Result).
 
-solve([]):-!.
-solve(Term):- member([], Term), !, fail.
+propagate([Head|Tail], Result):-
+    member(X, Head),
+    var(X),
+    member(X, [true,false]),
+    remove_value([Head|Tail], Result).
+
+
+solve_helper(Term,N):-
+    N >0,!,
+    NN is N -1,
+    unit_prop_and_remove(Term, NewTerm),
+    solve_helper(NewTerm, NN).
+
+solve_helper(Term, N):-
+    N >0,!,
+    NN is N-1,
+    propagate(Term, NewTerm),
+    solve_helper(NewTerm,NN).
+
+solve_helper([], _):-!.
+solve_helper(Term, _):- member([], Term), !, fail.
+
+%solve([]):-!.
+%solve(Term):- member([], Term), !, fail.
 solve(Term):-
-    unit_porpagate(Term, Term1),
-    remove_value(Term1, Term2),!,
-    solve(Term2, 1).
+    unit_prop_and_remove(Term, Term1),!,
+    solve_helper(Term1, 10).
