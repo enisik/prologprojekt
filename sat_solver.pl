@@ -128,8 +128,8 @@ to_cnf(Term, Result):-
 
 remove_false([],[]):-!.
 remove_false([Head|Tail], Result):-
-    atom(Head),!,
-    Head == false,
+    ground(Head),!,
+    (Head == false ; Head == not(true)), % <-- unsat3 schlägt fehl, wenn hier ein cut ist, statt oben
     remove_false(Tail,Result).
 remove_false([Head|Tail], [Head|TResult]):-
     remove_false(Tail,TResult).
@@ -138,7 +138,8 @@ remove_value([],[]):-!.
 remove_value([Head|Tail], Result):-
     member(X, Head),
     ground(X),
-    member(X, [true]),!,
+    (X == true; X == not(false)),!,
+    %member(X, [true, not(false)]),!,
     remove_value(Tail,Result).
 remove_value([Head|Tail], [NewHead|TResult]):-
     remove_false(Head,NewHead),!,
@@ -156,8 +157,8 @@ unit_propagate([Head|Tail], [Head|TResult]):-
     unit_propagate(Tail,TResult).
 
 unit_prop_and_remove(List,Result):-
-    remove_value(List, ClearList),
-    unit_propagate(ClearList, NewList),
+    remove_value(List, CleanedList),
+    unit_propagate(CleanedList, NewList),
     remove_value(NewList,Result).
 
 propagate([Head|Tail], Result):-
@@ -166,23 +167,24 @@ propagate([Head|Tail], Result):-
     member(X, [true,false]),
     remove_value([Head|Tail], Result).
 
+propagate([Head|Tail], Result):-
+    member(not(X), Head),
+    var(X),
+    member(X, [true,false]),
+    remove_value([Head|Tail], Result).
+
 solve_helper([]):-!.
 solve_helper(Term):- member([], Term), !, fail.
 
 solve_helper(Term):-
-    %N >0,!,
-    %NN is N -1,
     unit_prop_and_remove(Term, NewTerm),
     solve_helper(NewTerm).
 
 solve_helper(Term):-
-    %N >0,!,
-    %NN is N-1,
     propagate(Term, NewTerm),
     solve_helper(NewTerm).
 
-%solve([]):-!.
-%solve(Term):- member([], Term), !, fail.
+
 solve(Term):-
     unit_prop_and_remove(Term, NewTerm),!,
     solve_helper(NewTerm).
