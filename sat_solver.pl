@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 % solvername\1
-solvername(proSAT - logisch einwandfrei).
+solvername(proSAT-logisch einwandfrei).
 
 %%____ to_cnf/2 ____%%
 
@@ -158,7 +158,6 @@ unit_propagate([Head|Tail], [Head|TResult]):-
     unit_propagate(Tail,TResult).
 
 unit_prop_and_remove(List,Result):-
-    %remove_value(List, CleanedList),
     has_unit(List),!,
     unit_propagate(List, NewList),
     remove_value(NewList,Result).
@@ -176,7 +175,6 @@ propagate([Head|Tail], Result):-
     member(not(X), Head),
     var(X),!,
     (X = true; X = false),
-    %member(X, [true,false]),
     remove_value([Head|Tail], Result).
 
 
