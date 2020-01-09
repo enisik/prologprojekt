@@ -4,7 +4,7 @@
 
 :- load_test_files([]).
 
-% solvername\1
+%%____ solvername\1 ____%%
 solvername(proSAT-logisch_einwandfrei).
 
 %%____ to_cnf/2 ____%%
@@ -96,6 +96,7 @@ distri_loop(Term1, Result):-
     !,
     distri_loop(Term2, Result).
 distri_loop(Term, Term).
+%------------------------------------------------------------------------------
 
 % to_list converts cnf to list
 to_list(lit(X), [[X]]):-!.
@@ -117,7 +118,6 @@ to_list(or(Term1, Term2), [Result]):-
     append(Res1, Res2, Result).
 
 to_cnf(Term, Result):-
-    !,
     simplify_implies(Term, SimpImpTerm),
     simplify_demorgan(SimpImpTerm, SimpDeMorganTerm),
     distri_loop(SimpDeMorganTerm,SimpTerm),
@@ -127,7 +127,6 @@ to_cnf(Term, Result):-
 
 remove_false([],[]):-!.
 remove_false([Head|Tail], Result):-
-    ground(Head),
     (Head == false ; Head == not(true)),!,
     remove_false(Tail,Result).
 remove_false([Head|Tail], [Head|TResult]):-
@@ -137,9 +136,7 @@ remove_false([Head|Tail], [Head|TResult]):-
 remove_value([],[]):-!.
 remove_value([Head|Tail], Result):-
     member(X, Head),
-    ground(X),
     (X == true; X == not(false)),!,
-    %member(X, [true, not(false)]),!,
     remove_value(Tail,Result).
 remove_value([Head|Tail], [NewHead|TResult]):-
     remove_false(Head,NewHead),!,
@@ -148,32 +145,32 @@ remove_value(List, List).
 
 
 unit_propagate([],[]):-!.
-unit_propagate([[Var]|Tail], Tail):-
-    var(Var),
-    Var = true.
-unit_propagate([[not(Var)]|Tail], Tail):-
-    var(Var),
-    Var = false.
+unit_propagate([[true]|Tail], Tail).
+    %var(Var),
+    %Var = true.
+unit_propagate([[not(false)]|Tail], Tail).
+    %var(Var),
+    %Var = false.
 unit_propagate([Head|Tail], [Head|TResult]):-
     unit_propagate(Tail,TResult).
 
 unit_prop_and_remove(List,Result):-
-    has_unit(List),!,
+    has_unit_clause(List),!,
     unit_propagate(List, NewList),
     remove_value(NewList,Result).
 
-has_unit(Term):-
+has_unit_clause(Term):-
     member([_Var], Term).
 
 propagate([Head|Tail], Result):-
     member(X, Head),
-    var(X),
+    %var(X),
     (X = true; X = false),
     remove_value([Head|Tail], Result).
 
 propagate([Head|Tail], Result):-
     member(not(X), Head),
-    var(X),!,
+    %var(X),!,
     (X = true; X = false),
     remove_value([Head|Tail], Result).
 
