@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 % solvername\1
-solvername(proSAT-logisch einwandfrei).
+solvername(proSAT-logisch_einwandfrei).
 
 %%____ to_cnf/2 ____%%
 
