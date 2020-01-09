@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 % solvername\1
-solvername(proSAT).
+solvername(proSAT - logisch einwandfrei).
 
 %%____ to_cnf/2 ____%%
 
@@ -74,35 +74,28 @@ simplify_demorgan(Term,Term).
 %simplify_distributive property ---------------------------------------------
 
 % Distributive property
-simplify_distri(or(Term1, and(Term2,Term3)), and(or(SimpTerm1,SimpTerm2), or(SimpTerm1,SimpTerm3))):-
-    !,
-    simplify_distri(Term1, SimpTerm1),
-    simplify_distri(Term2, SimpTerm2),
-    simplify_distri(Term3, SimpTerm3).
+simplify_distri(or(Term1, and(Term2,Term3)), and(or(Term1,Term2), or(Term1,Term3))):- !.
 
-simplify_distri(or(and(Term1,Term2),Term3), and(or(SimpTerm1, SimpTerm3), or(SimpTerm2, SimpTerm3))):-
-    !,
-    simplify_distri(Term1, SimpTerm1),
-    simplify_distri(Term2, SimpTerm2),
-    simplify_distri(Term3, SimpTerm3).
+simplify_distri(or(and(Term1,Term2),Term3), and(or(Term1, Term3), or(Term2, Term3))):-!.
 
-simplify_distri(and(Term1, Term2), and(SimpTerm1, SimpTerm2)):-
-    !,
-    simplify_distri(Term1, SimpTerm1),
+simplify_distri(and(Term1, Term2), and(SimpTerm1, Term2)):-
+    simplify_distri(Term1, SimpTerm1).
+
+simplify_distri(and(Term1, Term2), and(Term1, SimpTerm2)):-
     simplify_distri(Term2, SimpTerm2).
 
-simplify_distri(or(Term1, Term2), or(SimpTerm1, SimpTerm2)):-
-    !,
-    simplify_distri(Term1, SimpTerm1),
+simplify_distri(or(Term1, Term2), or(SimpTerm1, Term2)):-
+    simplify_distri(Term1, SimpTerm1).
+
+simplify_distri(or(Term1, Term2), or(Term1, SimpTerm2)):-
     simplify_distri(Term2, SimpTerm2).
 
-simplify_distri(Term,Term).
 
-%distri_loop(Term1, Result):-
-%    simplify_distri(Term1, Term2),
-%    !,
-%    distri_loop(Term2, Result).
-%distri_loop(Term, Term).
+distri_loop(Term1, Result):-
+    simplify_distri(Term1, Term2),
+    !,
+    distri_loop(Term2, Result).
+distri_loop(Term, Term).
 
 % to_list converts cnf to list
 to_list(lit(X), [[X]]):-!.
@@ -127,7 +120,7 @@ to_cnf(Term, Result):-
     !,
     simplify_implies(Term, SimpImpTerm),
     simplify_demorgan(SimpImpTerm, SimpDeMorganTerm),
-    simplify_distri(SimpDeMorganTerm,SimpTerm),
+    distri_loop(SimpDeMorganTerm,SimpTerm),
     to_list(SimpTerm, Result).
 
 % solve/1
