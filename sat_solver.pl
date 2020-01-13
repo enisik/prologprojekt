@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 %%____ solvername\1 ____%%
-solvername(proSAT-logisch_einwandfrei).
+solvername(Ensolve).
 
 %%____ to_cnf/2 ____%%
 
@@ -123,7 +123,7 @@ to_cnf(Term, Result):-
     distri_loop(SimpDeMorganTerm,SimpTerm),
     to_list(SimpTerm, Result).
 
-% solve/1
+%%____  solve/1 ____%%
 
 remove_false([],[]):-!.
 remove_false([Head|Tail], Result):-
@@ -144,33 +144,22 @@ remove_value([Head|Tail], [NewHead|TResult]):-
 remove_value(List, List).
 
 
-unit_propagate([],[]):-!.
 unit_propagate([[true]|Tail], Tail).
-    %var(Var),
-    %Var = true.
 unit_propagate([[not(false)]|Tail], Tail).
-    %var(Var),
-    %Var = false.
 unit_propagate([Head|Tail], [Head|TResult]):-
     unit_propagate(Tail,TResult).
 
 unit_prop_and_remove(List,Result):-
-    has_unit_clause(List),!,
     unit_propagate(List, NewList),
     remove_value(NewList,Result).
 
-has_unit_clause(Term):-
-    member([_Var], Term).
-
 propagate([Head|Tail], Result):-
     member(X, Head),
-    %var(X),
     (X = true; X = false),
     remove_value([Head|Tail], Result).
 
 propagate([Head|Tail], Result):-
     member(not(X), Head),
-    %var(X),!,
     (X = true; X = false),
     remove_value([Head|Tail], Result).
 
@@ -186,8 +175,6 @@ dpll(Term):-
     propagate(Term, NewTerm),
     dpll(NewTerm).
 
-
 solve(Term):-
-    %nit_prop_and_remove(Term, NewTerm),!,
     remove_value(Term, NewTerm),!,
     dpll(NewTerm).
