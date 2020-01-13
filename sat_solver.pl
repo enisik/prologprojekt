@@ -5,7 +5,7 @@
 :- load_test_files([]).
 
 %%____ solvername\1 ____%%
-solvername(Ensolve).
+solvername(ensolve).
 
 %%____ to_cnf/2 ____%%
 
