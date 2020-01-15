@@ -35,7 +35,7 @@ simplify_implies(or(Term1, Term2),or(SimpTerm1, SimpTerm2)):-
 simplify_implies(Term,Term).
 %-----------------------------------------------------------------------------
 
-% simplify_demorgan and not(not(X)) = X --------------------------------------
+% simplify_demorgan ----------------------------------------------------------
 
 % De Morgan's laws
 simplify_demorgan(not(or(Term1,Term2)), and(SimpTerm1,SimpTerm2)):-
@@ -176,5 +176,5 @@ dpll(Term):-
     dpll(NewTerm).
 
 solve(Term):-
-    remove_value(Term, NewTerm),!,
+    remove_value(Term, NewTerm),
     dpll(NewTerm).
